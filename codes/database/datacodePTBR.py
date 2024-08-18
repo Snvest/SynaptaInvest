@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 
 # Nome do arquivo CSV com caminho relativo ao diretório atual
-csv_name = './database/finance_news.csv'  # Apenas o nome do arquivo
+csv_name = './codes/database/finance_news.csv'  # Apenas o nome do arquivo
 
 # Função para verificar se o arquivo CSV já existe
 def check_csv_exists(csv_name):
