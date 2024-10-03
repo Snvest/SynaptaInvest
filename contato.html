@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato - Synapta</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .contact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+        .contact-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px; /* Espaço entre a imagem e o botão */
+        }
+        .contact-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .contact-button {
+            padding: 10px 20px;
+            background-color: #ff6f00; /* Laranja fosco */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+        .contact-button:hover {
+            background-color: #e65c00; /* Laranja mais escuro para o hover */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Synapta</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Buscar</a></li>
+                    <li><a href="investimentos.html">Investimentos</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="carteira.html">Carteira</a></li>
+                    <li><a href="login.html"><img src="login-icon.png" alt="Login" class="login-icon">Login</a></li> <!-- Nova aba -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="contact">
+            <div class="container contact-container">
+                <img src="minha-imagem.jpg" alt="Contato" class="contact-image">
+                <a href="mailto:synaptaverse@gmail.com" class="contact-button">Entre em Contato Conosco</a>
+            </div>
+            <a href="index.html" class="cta-button">Voltar para Home</a>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Synapta. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

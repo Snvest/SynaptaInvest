@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investimentos - Synapta</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Biblioteca para gráficos -->
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Synapta</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Buscar</a></li>
+                    <li><a href="investimentos.html">Investimentos</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="carteira.html">Carteira</a></li>
+                    <li><a href="login.html"><img src="login-icon.png" alt="Login" class="login-icon">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="investments">
+            <div class="container">
+                <h2>Detalhes dos Investimentos</h2>
+                <p>Insira o valor total investido e veja a distribuição de acordo com a porcentagem das ações na carteira.</p>
+                
+                <!-- Input do valor monetário -->
+                <label for="investmentValue">Valor total investido (R$):</label>
+                <input type="number" id="investmentValue" placeholder="Digite o valor investido" onchange="updateChart()">
+                
+                <!-- Gráfico de Pizza -->
+                <canvas id="investmentChart" style="max-width: 60%; height: auto; display: block; margin: 0 auto;"></canvas> <!-- Dimensões ajustadas e centralização -->
+ <!-- Dimensões ajustadas -->
+ <!-- Dimensões do gráfico ajustadas -->
+
+                <!-- Tabela com a distribuição do investimento -->
+                <h3>Distribuição do Investimento:</h3>
+                <ul id="investmentDistribution">
+                    <!-- Aqui será gerada a lista da distribuição -->
+                </ul>
+
+                <a href="index.html" class="cta-button">Voltar para Home</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Synapta. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Configurações dos dados das ações e porcentagens
+        const stockData = [
+            { name: 'VALE ON', code: 'VALE3.SA', percentage: 26.7 },
+            { name: 'PETROBRAS PN', code: 'PETR4.SA', percentage: 19.8 },
+            { name: 'CPFL ENERGIA ON', code: 'CPFE3.SA', percentage: 17.5 },
+            { name: 'BRADESPAR PN', code: 'BRAP4.SA', percentage: 16.5 },
+            { name: 'ELETROBRAS ON', code: 'ELET3.SA', percentage: 8.2 },
+            { name: 'TRAN PAULISTPN', code: 'TRPL4.SA', percentage: 7.4 },
+            { name: 'GERDAU PN', code: 'GGBR4.SA', percentage: 3.9 }
+        ];
+
+        // Função para criar o gráfico de pizza
+        const ctx = document.getElementById('investmentChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: stockData.map(stock => stock.name),
+                datasets: [{
+                    data: stockData.map(stock => stock.percentage),
+                    backgroundColor: ['#3c8dbc', '#f39c12', '#00a65a', '#dd4b39', '#605ca8', '#d81b60', '#39cccc']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribuição da Carteira'
+                    }
+                }
+            }
+        });
+
+        // Função para atualizar a distribuição com base no valor inserido
+        function updateChart() {
+            const investmentValue = document.getElementById('investmentValue').value;
+            const distributionList = document.getElementById('investmentDistribution');
+            distributionList.innerHTML = ''; // Limpa a lista
+
+            if (investmentValue) {
+                stockData.forEach(stock => {
+                    const stockValue = ((investmentValue * stock.percentage) / 100).toFixed(2);
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<span style="font-size: 20px; font-weight: bold;">${stock.name} (${stock.code}):</span> R$ ${stockValue}`; // Aumenta o tamanho do nome das ações
+                    distributionList.appendChild(listItem);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

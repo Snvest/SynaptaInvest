@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - Synapta</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .search-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .search-input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+        .search-button {
+            background-color: #ff6f00; /* Laranja fosco */
+            color: #fff;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+        }
+        .search-button:hover {
+            background-color: #e65c00; /* Laranja mais escuro para o hover */
+        }
+        .info-boxes {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        .info-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 23%;
+            text-align: center;
+        }
+        .info-box h3 {
+            margin: 0 0 10px;
+        }
+        .info-box p {
+            margin: 0;
+        }
+        .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .icon-positive {
+            color: #28a745; /* Verde para positivo */
+        }
+        .icon-negative {
+            color: #dc3545; /* Vermelho para negativo */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Synapta</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Buscar</a></li>
+                    <li><a href="investimentos.html">Investimentos</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="carteira.html">Carteira</a></li>
+                    <li><a href="login.html"><img src="login-icon.png" alt="Login" class="login-icon">Login</a></li> <!-- Nova aba -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="about">
+            <div class="container">
+                <div class="search-section">
+                    <input type="text" class="search-input" placeholder="Buscar ações...">
+                    <a href="#" class="search-button">Buscar</a>
+                </div>
+                <div class="info-boxes">
+                    <div class="info-box">
+                        <div class="icon icon-positive">📈</div>
+                        <h3>Valuation</h3>
+                        <p>Informações sobre avaliação de ações.</p>
+                    </div>
+                    <div class="info-box">
+                        <div class="icon icon-negative">📰</div>
+                        <h3>Notícias</h3>
+                        <p>Últimas notícias do mercado.</p>
+                    </div>
+                    <div class="info-box">
+                        <div class="icon icon-positive">📊</div>
+                        <h3>Relatórios</h3>
+                        <p>Relatórios de análises detalhadas.</p>
+                    </div>
+                    <div class="info-box">
+                        <div class="icon icon-negative">🤖</div>
+                        <h3>IA</h3>
+                        <p>Insights e previsões baseadas em IA.</p>
+                    </div>
+                </div>
+                <a href="index.html" class="cta-button">Voltar para Home</a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Synapta. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

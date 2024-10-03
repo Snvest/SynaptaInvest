@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carteira - Synapta</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .portfolio-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .cta-button {
+            background-color: #ff6f00; /* Laranja fosco */
+            color: #fff;
+            padding: 15px 30px;
+            margin: 0 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none; /* Remover bordas dos botões */
+        }
+
+        .cta-button:hover {
+            background-color: #e65c00; /* Laranja mais escuro para o hover */
+        }
+
+        .investment-table th {
+            font-size: 20px;
+            letter-spacing: 2px;
+            padding: 15px;
+        }
+
+        .investment-table {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Synapta</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Buscar</a></li>
+                    <li><a href="investimentos.html">Investimentos</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="carteira.html">Carteira</a></li>
+                    <li><a href="login.html"><img src="login-icon.png" alt="Login" class="login-icon">Login</a></li> <!-- Nova aba -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="portfolio">
+            <div class="container">
+                <h2>Minha Carteira de Investimentos</h2>
+                <div class="portfolio-buttons">
+                    <button class="cta-button">Integrar com a sua carteira de investimentos</button>
+                    <button class="cta-button">Adicionar Ativo</button>
+                </div>
+                <div class="investment-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ativo</th>
+                                <th>Quantidade</th>
+                                <th>Preço Médio</th>
+                                <th>Valor Atual</th>
+                                <th>Variação (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Nenhum dado de investimento -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Synapta. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

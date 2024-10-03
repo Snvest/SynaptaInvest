@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Synapta</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos adicionais para a imagem do header */
+        .header-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-logo {
+            border-radius: 50%; /* Moldura redonda */
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        /* Estilo para a exibição das notícias */
+        .news-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .news-item {
+            flex: 1 1 calc(33.333% - 20px); /* Faz com que cada item ocupe 1/3 da linha */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+        }
+
+        .news-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .news-content {
+            padding: 15px;
+        }
+
+        .news-content h3 {
+            margin-top: 0;
+            font-size: 1.25em;
+        }
+
+        .news-content p {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .news-content a {
+            text-decoration: none;
+            color: #ff6f00;
+        }
+
+        .news-content a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <!-- Imagem ao lado do título -->
+            <img src="minha-imagem.jpg" alt="Logo SInvest" class="header-logo">
+            <h1>Synapta</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="sobre.html">Buscar</a></li>
+                    <li><a href="investimentos.html">Investimentos</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="carteira.html">Carteira</a></li>
+                    <li><a href="login.html"><img src="login-icon.png" alt="Login" style="width: 20px; height: 20px;"> Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>Encontre as melhores oportunidades de investimento diante de nossas análises</h2>
+                <p>Compare e analise os investimentos mais promissores no mercado.</p>
+                <a href="investimentos.html" class="cta-button">Saiba Mais</a>
+            </div>
+        </section>
+        <section class="featured">
+            <div class="container">
+                <h2>Investimentos em Destaque</h2>
+                <div class="cards">
+                    <div class="card">
+                        <h3>PETR4</h3>
+                        <p>Detalhes sobre a ação PETR4.</p>
+                        <a href="investimentos.html" class="card-button">Saiba Mais</a>
+                    </div>
+                    <div class="card">
+                        <h3>BBDC4</h3>
+                        <p>Detalhes sobre a ação BBDC4.</p>
+                        <a href="investimentos.html" class="card-button">Saiba Mais</a>
+                    </div>
+                    <div class="card">
+                        <h3>ITUB4</h3>
+                        <p>Detalhes sobre a ação ITUB4.</p>
+                        <a href="investimentos.html" class="card-button">Saiba Mais</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="news">
+            <div class="container">
+                <h2>Últimas Notícias sobre Ações</h2>
+                <div class="news-container" id="news-container">
+                    <!-- As notícias serão carregadas aqui pelo JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Synapta. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const apiKey = 'crtgvi1r01qv68qhfc30crtgvi1r01qv68qhfc3g'; // Sua chave API da Finnhub
+            const newsContainer = document.getElementById('news-container');
+            const url = `https://finnhub.io/api/v1/news?category=stock&token=${apiKey}`; // Categoria 'stock' para notícias sobre ações
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(article => {
+                        const newsItem = document.createElement('div');
+                        newsItem.classList.add('news-item');
+                        newsItem.innerHTML = `
+                            <img src="${article.image}" alt="${article.headline}">
+                            <div class="news-content">
+                                <h3><a href="${article.url}" target="_blank">${article.headline}</a></h3>
+                                <p>${article.summary}</p>
+                            </div>
+                        `;
+                        newsContainer.appendChild(newsItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar as notícias:', error);
+                    newsContainer.innerHTML = '<p>Não foi possível carregar as notícias no momento.</p>';
+                });
+        });
+    </script>
+</body>
+</html>
