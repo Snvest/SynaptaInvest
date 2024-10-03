@@ -35,15 +35,25 @@
                 <input type="number" id="investmentValue" placeholder="Digite o valor investido" onchange="updateChart()">
                 
                 <!-- Gráfico de Pizza -->
-                <canvas id="investmentChart" style="max-width: 60%; height: auto; display: block; margin: 0 auto;"></canvas> <!-- Dimensões ajustadas e centralização -->
- <!-- Dimensões ajustadas -->
- <!-- Dimensões do gráfico ajustadas -->
+                <canvas id="investmentChart" style="max-width: 60%; height: auto; display: block; margin: 0 auto;"></canvas>
 
                 <!-- Tabela com a distribuição do investimento -->
                 <h3>Distribuição do Investimento:</h3>
                 <ul id="investmentDistribution">
                     <!-- Aqui será gerada a lista da distribuição -->
                 </ul>
+
+                <!-- Novo campo para inserir o ticker -->
+                <h3>Buscar informações de um ticker:</h3>
+                <label for="tickerInput">Digite o Ticker:</label>
+                <input type="text" id="tickerInput" placeholder="Ex: AMER3.SA">
+                <button onclick="fetchTickerInfo()">Buscar Ticker</button>
+
+                <!-- Exibir as informações do ticker -->
+                <h3>Informações do Ticker:</h3>
+                <div id="tickerInfo">
+                    <!-- Aqui aparecerão os resultados da API -->
+                </div>
 
                 <a href="index.html" class="cta-button">Voltar para Home</a>
             </div>
@@ -106,6 +116,45 @@
                     listItem.innerHTML = `<span style="font-size: 20px; font-weight: bold;">${stock.name} (${stock.code}):</span> R$ ${stockValue}`; // Aumenta o tamanho do nome das ações
                     distributionList.appendChild(listItem);
                 });
+            }
+        }
+
+        // Função para buscar informações do ticker da API
+        async function fetchTickerInfo() {
+            const ticker = document.getElementById('tickerInput').value;
+            const tickerInfoDiv = document.getElementById('tickerInfo');
+
+            // Limpa a informação anterior
+            tickerInfoDiv.innerHTML = '';
+
+            if (ticker) {
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/predict', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ticker: ticker }),
+                        credentials: 'include'  // Adiciona suporte a credenciais
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // Exibe as informações do ticker
+                        tickerInfoDiv.innerHTML = `
+                            <p><strong>Preço Atual:</strong> R$ ${data.current_price.toFixed(2)}</p>
+                            <p><strong>Preço Alvo:</strong> R$ ${data.target_price.toFixed(2)}</p>
+                            <p><strong>Recomendação:</strong> ${data.recommendation}</p>
+                        `;
+                    } else {
+                        tickerInfoDiv.innerHTML = `<p>Erro: ${data.error}</p>`;
+                    }
+                } catch (error) {
+                    tickerInfoDiv.innerHTML = `<p>Erro na requisição: ${error.message}</p>`;
+                }
+            } else {
+                tickerInfoDiv.innerHTML = '<p>Por favor, insira um ticker válido.</p>';
             }
         }
     </script>

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # Importa o CORS
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -7,9 +8,10 @@ import torch.nn as nn
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import DataLoader, Dataset
 from copy import deepcopy as dc
-from sklearn.metrics import mean_squared_error
 
+# Inicializando o app Flask e habilitando o CORS para aceitar requisições de qualquer origem
 app = Flask(__name__)
+CORS(app, supports_credentials=True)  # Habilita CORS para aceitar qualquer origem e credenciais
 
 class TimeSeriesDataset(Dataset):
     def __init__(self, X, y):
@@ -136,24 +138,24 @@ def run_model_for_ticker(ticker):
     else:
         recommendation = "Manter"
 
-    rmse = mean_squared_error(y_test.flatten(), test_predictions, squared=False)
-
     # Retornando os resultados
     return {
         "current_price": current_price,
         "target_price": target_price,
         "recommendation": recommendation,
-        "rmse": rmse
     }
 
-# Rota principal para exibir o formulário e resultados
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        ticker = request.form["ticker"]
-        results = run_model_for_ticker(ticker)
-        return render_template("index.html", results=results)
-    return render_template("index.html", results=None)
+# Definindo a API para aceitar um ticker como parâmetro no corpo da requisição
+@app.route("/predict", methods=["POST"])
+def predict():
+    data = request.get_json()  # Recebe o corpo da requisição como JSON
+    ticker = data.get("ticker")  # Extrai o valor do ticker do JSON
+    if not ticker:
+        return jsonify({"error": "O parâmetro 'ticker' é obrigatório"}), 400
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    try:
+        results = run_model_for_ticker(ticker)
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
