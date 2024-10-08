@@ -29,21 +29,33 @@ def get_stock_data(ticker):
     stock_data = yf.download(ticker, start="2017-01-01")
     return stock_data[['Close']].reset_index()
 
-# Prepara os dados para o LSTM
+#preparando dados para o lstm
 def prepare_dataframe_for_lstm(df, n_steps):
     df = dc(df)
     df.set_index('Date', inplace=True)
+    
+    # Crie uma lista de DataFrames com as colunas deslocadas
+    close_cols = [df['Close']]
+    
+    # Use uma lista para armazenar as colunas deslocadas
     for i in range(1, n_steps + 1):
-        df[f'Close(t-{i})'] = df['Close'].shift(i)
-    df.dropna(inplace=True)
-    return df
+        shifted_col = df['Close'].shift(i).rename(f'Close(t-{i})')
+        close_cols.append(shifted_col)
+    
+    # Concatene todas as colunas de uma vez para evitar fragmentação
+    df_concat = pd.concat(close_cols, axis=1)
+    
+    # Remova valores nulos após o shift
+    df_concat.dropna(inplace=True)
+    
+    return df_concat
 
 # Função para carregar os dados de uma ação e rodar o modelo
 def run_model_for_ticker(ticker):
     # Pegando dados da ação
     data = get_stock_data(ticker)
     data['Date'] = pd.to_datetime(data['Date'])
-    lookback = 7
+    lookback = 300
     shifted_df = prepare_dataframe_for_lstm(data, lookback)
 
     # Convertendo os dados para numpy
