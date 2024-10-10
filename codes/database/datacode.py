@@ -5,74 +5,95 @@ import time
 import os
 from datetime import datetime, timedelta
 
-# Nome do arquivo CSV com caminho relativo ao diretório atual
-csv_name = './codes/database/finance_news.csv'  # Apenas o nome do arquivo
+# Lista de domínios confiáveis
+trusted_domains = [
+    'bbc.com', 'cnn.com', 'reuters.com', 'nytimes.com', 'forbes.com', 'valor.globo.com', 
+    'economia.uol.com.br', 'exame.com', 'g1.globo.com', 'folha.uol.com.br'
+]
 
-# Função para verificar se o arquivo CSV já existe
-def check_csv_exists(csv_name):
-    return os.path.exists(csv_name)
+# Função para verificar se uma URL é confiável com base no domínio
+def is_trusted(url):
+    for domain in trusted_domains:
+        if domain in url:
+            return True
+    return False
 
-# Função para criar um arquivo CSV vazio com cabeçalhos, se ele ainda não existir
-def init_csv(csv_name):
-    if not check_csv_exists(csv_name):
-        df = pd.DataFrame(columns=['title', 'link', 'publisher', 'provider', 'datetime'])
-        df.to_csv(csv_name, index=False)
-
-def fetch_newsapi(query='finance', language='pt'):
+# Função para verificar se a URL requer login
+def is_accessible_without_login(url):
     try:
-        api_key = 'e485851e82b94d78a79bc0535d7a9226'
-        today = datetime.now().strftime('%Y-%m-%d')
-        ten_days_ago = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
-        
-        url = f'https://newsapi.org/v2/everything?q={query}&language={language}&sortBy=publishedAt&pageSize=20&from={ten_days_ago}&to={today}&apiKey={api_key}'
-        
-        print(f"Consultando NewsAPI com a URL: {url}")  # Debug
-
-        response = requests.get(url)
-        data = response.json()
-
-        if response.status_code != 200:
-            print(f"Erro ao buscar da NewsAPI: {data}")
-            return []
-
-        articles = data.get('articles', [])
-        print(f"Artigos retornados da NewsAPI: {len(articles)}")  # Debug
-        return articles
+        response = requests.get(url, timeout=5)
+        # Verifica se o código de status é 401 ou 403 (requere login)
+        if response.status_code in [401, 403]:
+            print(f"Requer login: {url}")
+            return False
+        # Verifica se há redirecionamentos para uma página de login
+        if 'login' in response.url or 'signin' in response.url:
+            print(f"Redireciona para login: {url}")
+            return False
+        return True
     except Exception as e:
-        print(f"Erro na função fetch_newsapi: {e}")
-        return []
+        print(f"Erro ao verificar URL: {url} - {e}")
+        return False
 
-def fetch_gnews(query='finance', language='pt', from_date=None, to_date=None):
-    try:
-        api_key = 'f5765bad15b4cc6b79efedf898649d52'
-        
-        url = f'https://gnews.io/api/v4/search?q={query}&lang={language}&from={from_date}&to={to_date}&max=100&apikey={api_key}'
-
-        print(f"Consultando GNews com a URL: {url}")  # Debug
-
-        response = requests.get(url)
-        data = response.json()
-
-        if response.status_code != 200:
-            print(f"Erro ao buscar da GNews: {data}")
-            return []
-
-        articles = data.get('articles', [])
-        print(f"Artigos retornados da GNews: {len(articles)}")  # Debug
-        return articles
-    except Exception as e:
-        print(f"Erro na função fetch_gnews: {e}")
-        return []
-
-# Função para remover notícias que contenham "[removed]"
-def filter_removed_articles(df):
+# Função para filtrar as notícias confiáveis e acessíveis
+def filter_trusted_and_accessible_articles(df):
     if not df.empty:
-        # Remover linhas onde qualquer campo contém "[removed]"
-        df = df[~df.apply(lambda x: x.astype(str).str.contains(r'\[removed\]', case=False).any(), axis=1)]
+        # Filtrar URLs confiáveis e acessíveis
+        df = df[df['link'].apply(lambda x: is_trusted(x) and is_accessible_without_login(x))]
     return df
 
-# Função para atualizar o arquivo CSV com notícias adicionais do GNews
-def update_csv_gnews(csv_name, query):
+# Função para remover notícias que contenham "[removed]" ou que não são confiáveis/acessíveis
+def filter_removed_articles(df):
+    if not df.empty:
+        # Garantir que todos os valores de texto sejam strings
+        df = df.astype(str)
+        # Remover linhas onde qualquer campo contém "[removed]" ou "removed.com"
+        df = df[~df.apply(lambda x: x.str.contains(r'\[removed\]|removed.com', case=False, na=False).any(), axis=1)]
+        # Filtrar as confiáveis e acessíveis
+        df = filter_trusted_and_accessible_articles(df)
+    return df
+
+# Exemplo para salvar as notícias confiáveis e acessíveis em Excel
+def update_excel_newsapi(excel_name, query):
+    try:
+        additional_news = fetch_newsapi(query)
+        if not additional_news:
+            print("Nenhuma notícia adicional encontrada no NewsAPI.")
+            return
+
+        new_data = []
+        for item in additional_news:
+            new_data.append({
+                'title': item.get('title', 'N/A'),
+                'link': item.get('url', 'N/A'),
+                'publisher': item.get('source', {}).get('name', 'N/A'),
+                'provider': 'NewsAPI',
+                'datetime': item.get('publishedAt', 'N/A')
+            })
+
+        new_df = pd.DataFrame(new_data)
+        new_df = filter_removed_articles(new_df)  # Filtrar notícias removidas, confiáveis e acessíveis
+
+        if not new_df.empty:
+            print("Novos dados do NewsAPI a serem salvos:", new_df.head())
+        else:
+            print("Nenhuma notícia nova do NewsAPI para salvar.")
+
+        # Atualiza o Excel
+        if check_excel_exists(excel_name):
+            existing_df = pd.read_excel(excel_name)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['title', 'datetime'], keep='last')
+        else:
+            combined_df = new_df
+
+        combined_df.to_excel(excel_name, index=False)
+        print("Notícias do NewsAPI atualizadas com sucesso.")
+    
+    except Exception as e:
+        print(f"Erro ao atualizar Excel com NewsAPI: {e}")
+
+# Exemplo para o GNews:
+def update_excel_gnews(excel_name, query):
     try:
         today = datetime.now().strftime('%Y-%m-%d')
         ten_days_ago = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
@@ -93,80 +114,22 @@ def update_csv_gnews(csv_name, query):
             })
 
         new_df = pd.DataFrame(new_data)
-        new_df = filter_removed_articles(new_df)  # Filtrar as notícias que têm "[removed]"
+        new_df = filter_removed_articles(new_df)  # Filtrar as notícias removidas, confiáveis e acessíveis
 
         if not new_df.empty:
             print("Novos dados do GNews a serem salvos:", new_df.head())
         else:
             print("Nenhuma notícia nova do GNews para salvar.")
 
-        # Atualiza o CSV
-        if check_csv_exists(csv_name):
-            existing_df = pd.read_csv(csv_name)
+        # Atualiza o Excel
+        if check_excel_exists(excel_name):
+            existing_df = pd.read_excel(excel_name)
             combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['title', 'datetime'], keep='last')
         else:
             combined_df = new_df
 
-        combined_df.to_csv(csv_name, index=False)
+        combined_df.to_excel(excel_name, index=False)
         print("Notícias do GNews atualizadas com sucesso.")
     
     except Exception as e:
-        print(f"Erro ao atualizar CSV com GNews: {e}")
-
-# Função para atualizar o arquivo CSV com notícias adicionais do NewsAPI
-def update_csv_newsapi(csv_name, query):
-    try:
-        additional_news = fetch_newsapi(query)
-        if not additional_news:
-            print("Nenhuma notícia adicional encontrada no NewsAPI.")
-            return
-
-        new_data = []
-        for item in additional_news:
-            new_data.append({
-                'title': item.get('title', 'N/A'),
-                'link': item.get('url', 'N/A'),
-                'publisher': item.get('source', {}).get('name', 'N/A'),
-                'provider': 'NewsAPI',
-                'datetime': item.get('publishedAt', 'N/A')
-            })
-
-        new_df = pd.DataFrame(new_data)
-        new_df = filter_removed_articles(new_df)  # Filtrar as notícias que têm "[removed]"
-
-        if not new_df.empty:
-            print("Novos dados do NewsAPI a serem salvos:", new_df.head())
-        else:
-            print("Nenhuma notícia nova do NewsAPI para salvar.")
-
-        # Atualiza o CSV
-        if check_csv_exists(csv_name):
-            existing_df = pd.read_csv(csv_name)
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['title', 'datetime'], keep='last')
-        else:
-            combined_df = new_df
-
-        combined_df.to_csv(csv_name, index=False)
-        print("Notícias do NewsAPI atualizadas com sucesso.")
-    
-    except Exception as e:
-        print(f"Erro ao atualizar CSV com NewsAPI: {e}")
-
-# Inicializa o arquivo CSV se ainda não existir
-init_csv(csv_name)
-
-# Função para agendar a atualização das notícias
-def job():
-    update_csv_newsapi(csv_name, query='finance')
-    update_csv_gnews(csv_name, query='finance')
-
-# Agendamento da tarefa diária
-schedule.every().hour.do(job)
-
-# Executa a função uma vez ao iniciar para garantir que o CSV seja atualizado imediatamente
-job()
-
-# Loop para manter o script rodando e verificando o agendamento
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+        print(f"Erro ao atualizar Excel com GNews: {e}")
