@@ -22,11 +22,9 @@ def is_trusted(url):
 def is_accessible_without_login(url):
     try:
         response = requests.get(url, timeout=5)
-        # Verifica se o código de status é 401 ou 403 (requere login)
         if response.status_code in [401, 403]:
             print(f"Requer login: {url}")
             return False
-        # Verifica se há redirecionamentos para uma página de login
         if 'login' in response.url or 'signin' in response.url:
             print(f"Redireciona para login: {url}")
             return False
@@ -38,22 +36,54 @@ def is_accessible_without_login(url):
 # Função para filtrar as notícias confiáveis e acessíveis
 def filter_trusted_and_accessible_articles(df):
     if not df.empty:
-        # Filtrar URLs confiáveis e acessíveis
         df = df[df['link'].apply(lambda x: is_trusted(x) and is_accessible_without_login(x))]
     return df
 
 # Função para remover notícias que contenham "[removed]" ou que não são confiáveis/acessíveis
 def filter_removed_articles(df):
     if not df.empty:
-        # Garantir que todos os valores de texto sejam strings
         df = df.astype(str)
-        # Remover linhas onde qualquer campo contém "[removed]" ou "removed.com"
         df = df[~df.apply(lambda x: x.str.contains(r'\[removed\]|removed.com', case=False, na=False).any(), axis=1)]
-        # Filtrar as confiáveis e acessíveis
         df = filter_trusted_and_accessible_articles(df)
     return df
 
-# Exemplo para salvar as notícias confiáveis e acessíveis em Excel
+# Função para verificar se o arquivo Excel existe
+def check_excel_exists(excel_name):
+    return os.path.exists(excel_name)
+
+# Função para buscar notícias do NewsAPI (filtrar para o dia atual)
+def fetch_newsapi(query):
+    today = datetime.now().strftime('%Y-%m-%d')  # Data de hoje
+    url = f"https://newsapi.org/v2/everything?q={query}&apiKey=e485851e82b94d78a79bc0535d7a9226"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.json().get('articles', [])
+        else:
+            print(f"Erro na requisição ao NewsAPI: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"Erro ao buscar dados do NewsAPI: {e}")
+        return []
+
+# Função para buscar notícias do GNews (filtrar para o dia atual)
+def fetch_gnews(query):
+    today = datetime.now().strftime('%Y-%m-%d')  # Data de hoje
+    url = f"https://gnews.io/api/v4/search?q={query}&lang=pt&country=br&max=50&apikey=e485851e82b94d78a79bc0535d7a9226"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.json().get('articles', [])
+        else:
+            print(f"Erro na requisição ao GNews: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"Erro ao buscar dados do GNews: {e}")
+        return []
+
+# Função para atualizar Excel com NewsAPI
 def update_excel_newsapi(excel_name, query):
     try:
         additional_news = fetch_newsapi(query)
@@ -72,14 +102,13 @@ def update_excel_newsapi(excel_name, query):
             })
 
         new_df = pd.DataFrame(new_data)
-        new_df = filter_removed_articles(new_df)  # Filtrar notícias removidas, confiáveis e acessíveis
+        new_df = filter_removed_articles(new_df)
 
         if not new_df.empty:
             print("Novos dados do NewsAPI a serem salvos:", new_df.head())
         else:
             print("Nenhuma notícia nova do NewsAPI para salvar.")
 
-        # Atualiza o Excel
         if check_excel_exists(excel_name):
             existing_df = pd.read_excel(excel_name)
             combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['title', 'datetime'], keep='last')
@@ -92,12 +121,10 @@ def update_excel_newsapi(excel_name, query):
     except Exception as e:
         print(f"Erro ao atualizar Excel com NewsAPI: {e}")
 
-# Exemplo para o GNews:
+# Função para atualizar Excel com GNews
 def update_excel_gnews(excel_name, query):
     try:
-        today = datetime.now().strftime('%Y-%m-%d')
-        ten_days_ago = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
-        additional_news = fetch_gnews(query=query, from_date=ten_days_ago, to_date=today)
+        additional_news = fetch_gnews(query)
 
         if not additional_news:
             print("Nenhuma notícia adicional encontrada.")
@@ -114,14 +141,13 @@ def update_excel_gnews(excel_name, query):
             })
 
         new_df = pd.DataFrame(new_data)
-        new_df = filter_removed_articles(new_df)  # Filtrar as notícias removidas, confiáveis e acessíveis
+        new_df = filter_removed_articles(new_df)
 
         if not new_df.empty:
             print("Novos dados do GNews a serem salvos:", new_df.head())
         else:
             print("Nenhuma notícia nova do GNews para salvar.")
 
-        # Atualiza o Excel
         if check_excel_exists(excel_name):
             existing_df = pd.read_excel(excel_name)
             combined_df = pd.concat([existing_df, new_df], ignore_index=True).drop_duplicates(subset=['title', 'datetime'], keep='last')
@@ -133,3 +159,19 @@ def update_excel_gnews(excel_name, query):
     
     except Exception as e:
         print(f"Erro ao atualizar Excel com GNews: {e}")
+
+# Função para rodar as atualizações a cada hora
+def job():
+    excel_name = './database/finance_news.xlsx'
+    query = 'fin'
+    update_excel_newsapi(excel_name, query)
+    update_excel_gnews(excel_name, query)
+
+# Agenda a função para rodar a cada 1 hora
+schedule.every(1).hours.do(job)
+
+# Mantém o script rodando
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+
